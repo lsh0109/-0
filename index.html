@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>公民小堂測驗：法律位階與憲法保障的基本權利</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+      --correct: #16a34a;
+      --correct-bg: #f0fdf4;
+      --incorrect: #dc2626;
+      --incorrect-bg: #fef2f2;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Microsoft JhengHei", sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .quiz-container {
+      background-color: var(--card-bg);
+      width: 100%;
+      max-width: 720px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+      padding: 32px;
+      border: 1px solid var(--border-color);
+    }
+
+    header {
+      margin-bottom: 24px;
+      border-bottom: 2px solid var(--bg-color);
+      padding-bottom: 16px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      color: var(--text-main);
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background-color: #e2e8f0;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 0%;
+      background-color: var(--primary);
+      transition: width 0.3s ease;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+      font-weight: 600;
+    }
+
+    .question-card {
+      margin-top: 16px;
+    }
+
+    .question-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .options-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .option-btn {
+      width: 100%;
+      text-align: left;
+      padding: 14px 18px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border-color);
+      background-color: var(--card-bg);
+      color: var(--text-main);
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--primary);
+      background-color: #eff6ff;
+    }
+
+    .option-btn:disabled {
+      cursor: default;
+    }
+
+    .option-btn.selected-correct {
+      background-color: var(--correct-bg);
+      border-color: var(--correct);
+      color: var(--correct);
+      font-weight: 600;
+    }
+
+    .option-btn.selected-incorrect {
+      background-color: var(--incorrect-bg);
+      border-color: var(--incorrect);
+      color: var(--incorrect);
+      font-weight: 600;
+    }
+
+    .option-btn.show-correct {
+      border-color: var(--correct);
+      background-color: var(--correct-bg);
+      color: var(--correct);
+    }
+
+    .explanation-box {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 8px;
+      background-color: #f1f5f9;
+      border-left: 4px solid var(--primary);
+      font-size: 0.95rem;
+      line-height: 1.5;
+      display: none;
+    }
+
+    .explanation-title {
+      font-weight: bold;
+      margin-bottom: 4px;
+      color: var(--primary);
+    }
+
+    .actions {
+      margin-top: 24px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .next-btn {
+      padding: 12px 24px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      display: none;
+    }
+
+    .next-btn:hover {
+      background-color: var(--primary-hover);
+    }
+
+    /* 結算頁面 */
+    .result-card {
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: #eff6ff;
+      border: 4px solid var(--primary);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      margin: 0 auto 20px;
+    }
+
+    .score-number {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--primary);
+    }
+
+    .score-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .review-list {
+      margin-top: 24px;
+      text-align: left;
+      max-height: 350px;
+      overflow-y: auto;
+      padding-right: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .review-item {
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background-color: #fafafa;
+      font-size: 0.9rem;
+    }
+
+    .review-item.is-correct {
+      border-left: 4px solid var(--correct);
+    }
+
+    .review-item.is-wrong {
+      border-left: 4px solid var(--incorrect);
+    }
+
+    .restart-btn {
+      margin-top: 24px;
+      padding: 12px 28px;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="quiz-container">
+    <header>
+      <h1>公民知識隨堂測驗</h1>
+      <p class="subtitle">主題：法律的位階與憲法保障的基本權利</p>
+      <div class="progress-bar-container">
+        <div class="progress-bar" id="progressBar"></div>
+      </div>
+      <div class="stats">
+        <span id="questionNum">題目 1 / 20</span>
+        <span id="scoreText">目前得分：0 分</span>
+      </div>
+    </header>
+
+    <main id="quizBody">
+      <div class="question-card">
+        <div class="question-title" id="questionText">載入中...</div>
+        <div class="options-list" id="optionsList"></div>
+        <div class="explanation-box" id="explanationBox">
+          <div class="explanation-title">解析：</div>
+          <div id="explanationText"></div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="next-btn" id="nextBtn" onclick="nextQuestion()">下一題</button>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        q: "1. 下列何者屬於狹義的「法律」？",
+        options: ["(A) 中華民國憲法", "(B) 國民教育法", "(C) 國民教育法施行細則", "(D) 交通安全規則"],
+        answer: 1,
+        exp: "狹義的法律是指由立法院三讀通過、總統公布的規範，如《國民教育法》；(A)為憲法，(C)(D)為行政機關訂定的命令。"
+      },
+      {
+        q: "2. 依據法律位階，效力由高到低的順序為何？",
+        options: ["(A) 憲法 > 命令 > 法律", "(B) 法律 > 憲法 > 命令", "(C) 憲法 > 法律 > 命令", "(D) 命令 > 法律 > 憲法"],
+        answer: 2,
+        exp: "我國法律位階由高至低依序為：憲法 > 法律 > 命令。"
+      },
+      {
+        q: "3. 立法院通過、總統公布的規範，在法律位階中屬於哪一層級？",
+        options: ["(A) 憲法", "(B) 法律", "(C) 命令", "(D) 條約"],
+        answer: 1,
+        exp: "立法院通過、總統公布的規範即屬於狹義的「法律」層級。"
+      },
+      {
+        q: "4. 行政機關基於法律授權所訂定的規範（如：細則、辦法、規程），屬於下列何者？",
+        options: ["(A) 憲法", "(B) 法律", "(C) 命令", "(D) 憲法增修條文"],
+        answer: 2,
+        exp: "行政機關為補充法律不足所訂定的規範稱為「命令」。"
+      },
+      {
+        q: "5. 下列哪一項不是憲法的主要特性？",
+        options: ["(A) 最高性", "(B) 原則性", "(C) 固定性", "(D) 變動性"],
+        answer: 3,
+        exp: "憲法具備最高性、原則性與固定性三大特性。「變動性」並非憲法特性（憲法修訂程序極為繁複困難，不宜頻繁變動）。"
+      },
+      {
+        q: "6. 當法律或命令有牴觸憲法的疑義時，由哪一個機關審理判定？",
+        options: ["(A) 立法院", "(B) 行政院", "(C) 憲法法庭", "(D) 監察院"],
+        answer: 2,
+        exp: "當法律與命令有牴觸憲法之疑義時，由「憲法法庭」審理判定。"
+      },
+      {
+        q: "7. 我國憲法的修正程序極為嚴格，由立法院提出憲法修正案並公告半年後，需經由何種方式投下複決票？",
+        options: ["(A) 總統投票", "(B) 選民投票", "(C) 國民大會代表投票", "(D) 行政院院會決議"],
+        answer: 1,
+        exp: "依憲法增修條文，立法院提出憲法修正案公告半年後，需交由「選舉人（選民）投票複決」。"
+      },
+      {
+        q: "8. 憲法規定「中華民國人民，無分男女、宗教、種族、階級、黨派，在法律上一律平等」，這屬於哪一種基本權利？",
+        options: ["(A) 平等權", "(B) 自由權", "(C) 受益權", "(D) 參政權"],
+        answer: 0,
+        exp: "保障每個人在法律上均享有同等權利與義務，不受歧視，屬於「平等權」。"
+      },
+      {
+        q: "9. 人民可以自由選擇居住場所與往來國內外各地，這是保障人民的哪項自由？",
+        options: ["(A) 人身自由", "(B) 居住及遷徙自由", "(C) 表現自由", "(D) 集會及結社自由"],
+        answer: 1,
+        exp: "自由選擇居住地與遷移往來的權利屬於「居住及遷徙自由」。"
+      },
+      {
+        q: "10. 人民享有言論、講學、著作、出版等自由，屬於下列哪一種權利？",
+        options: ["(A) 平等權中的性別平等", "(B) 自由權中的表現自由", "(C) 受益權中的請願權", "(D) 參政權中的創制權"],
+        answer: 1,
+        exp: "言論、講學、著作與出版皆為人民表達意見的方式，屬於自由權中的「表現自由」。"
+      },
+      {
+        q: "11. 警察逮捕犯罪嫌疑人時，必須依照法定程序進行，不得任意逮捕，這是為了保障人民的哪項權利？",
+        options: ["(A) 居住及遷徙自由", "(B) 人身自由", "(C) 秘密通訊自由", "(D) 信仰宗教自由"],
+        answer: 1,
+        exp: "除現行犯外，非經法定程序不得逮捕拘禁人民，保護的是「人身自由」。"
+      },
+      {
+        q: "12. 人民參加反空污遊行活動，屬於憲法保障的哪種自由？",
+        options: ["(A) 表現自由", "(B) 人身自由", "(C) 集會及結社自由", "(D) 秘密通訊自由"],
+        answer: 2,
+        exp: "參加遊行、集會活動，屬於「集會及結社自由」。"
+      },
+      {
+        q: "13. 當人民的權益受到侵害時，可以請求國家採取積極作為予以保障，這類權利統稱為：",
+        options: ["(A) 平等權", "(B) 自由權", "(C) 受益權", "(D) 參政權"],
+        answer: 2,
+        exp: "人民主動向國家請求特定利益或救濟的權利稱為「受益權」。"
+      },
+      {
+        q: "14. 人民針對政府政策或公共利益提出建議或表達訴求，是行使何種權利？",
+        options: ["(A) 請願權", "(B) 訴願權", "(C) 訴訟權", "(D) 創制權"],
+        answer: 0,
+        exp: "對國家政策、公共利益或權利侵害向行政或民意機關提出建議，稱為「請願權」。"
+      },
+      {
+        q: "15. 人民因行政機關的處分有不法或不當，致損害權益時，可向原處分機關或上級機關提出：",
+        options: ["(A) 請願", "(B) 訴願", "(C) 訴訟", "(D) 罷免"],
+        answer: 1,
+        exp: "因行政機關處分違法或不當致權益受損，向原處分機關或上級機關救濟稱為「訴願」。"
+      },
+      {
+        q: "16. 人民權利受到不法侵害時，向法院提起起訴，請求司法機關審判，稱為：",
+        options: ["(A) 請願", "(B) 訴願", "(C) 訴訟", "(D) 複決"],
+        answer: 2,
+        exp: "權利受到不法侵害，向「法院」提起起訴請求審判，屬於「訴訟權」。"
+      },
+      {
+        q: "17. 政府設置就業服務站以保障人民的就業權益，是屬於受益權中的哪一項保障？",
+        options: ["(A) 生存權", "(B) 工作權", "(C) 財產權", "(D) 請願權"],
+        answer: 1,
+        exp: "保障人民獲取工作與職業保障的權利屬於受益權中的「工作權」。"
+      },
+      {
+        q: "18. 人民有主動提出立法原則或制定政策案的權利，稱為：",
+        options: ["(A) 選舉權", "(B) 罷免權", "(C) 創制權", "(D) 複決權"],
+        answer: 2,
+        exp: "人民主動提出立法原則或政策提案的參政權利稱為「創制權」。"
+      },
+      {
+        q: "19. 人民以投票方式，對現有的法律或政策表示同意或反對的權利，稱為：",
+        options: ["(A) 選舉權", "(B) 罷免權", "(C) 創制權", "(D) 複決權"],
+        answer: 3,
+        exp: "人民對既有法律或政策進行投票表決同意或反對，稱為「複決權」。"
+      },
+      {
+        q: "20. 參加國家考試以擔任公務人員，屬於憲法保障人民的哪一種權利？",
+        options: ["(A) 受益權中的工作權", "(B) 參政權中的應考試服公職權", "(C) 平等權中的工作平等", "(D) 自由權中的表現自由"],
+        answer: 1,
+        exp: "參加應試與擔任公務員係憲法保障參政權中的「應考試服公職之權」。"
+      }
+    ];
+
+    let currentQ = 0;
+    let score = 0;
+    let userAnswers = [];
+
+    function renderQuestion() {
+      const qData = questions[currentQ];
+      
+      // 更新進度與標題
+      document.getElementById("progressBar").style.width = `${((currentQ) / questions.length) * 100}%`;
+      document.getElementById("questionNum").innerText = `題目 ${currentQ + 1} / ${questions.length}`;
+      document.getElementById("scoreText").innerText = `目前得分：${score} 分`;
+      document.getElementById("questionText").innerText = qData.q;
+      
+      // 隱藏解析與下一題按鈕
+      document.getElementById("explanationBox").style.display = "none";
+      document.getElementById("nextBtn").style.display = "none";
+
+      // 渲染選項
+      const optionsContainer = document.getElementById("optionsList");
+      optionsContainer.innerHTML = "";
+      
+      qData.options.forEach((optText, index) => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.innerText = optText;
+        btn.onclick = () => checkAnswer(index);
+        optionsContainer.appendChild(btn);
+      });
+    }
+
+    function checkAnswer(selectedIndex) {
+      const qData = questions[currentQ];
+      const buttons = document.querySelectorAll(".option-btn");
+
+      // 禁用所有按鈕
+      buttons.forEach(btn => btn.disabled = true);
+
+      // 紀錄使用者答案
+      const isCorrect = (selectedIndex === qData.answer);
+      userAnswers.push({
+        qIndex: currentQ,
+        selected: selectedIndex,
+        isCorrect: isCorrect
+      });
+
+      if (isCorrect) {
+        buttons[selectedIndex].classList.add("selected-correct");
+        score += 5; // 20題每題5分
+      } else {
+        buttons[selectedIndex].classList.add("selected-incorrect");
+        buttons[qData.answer].classList.add("show-correct");
+      }
+
+      // 顯示解析
+      document.getElementById("explanationText").innerText = qData.exp;
+      document.getElementById("explanationBox").style.display = "block";
+
+      // 顯示下一題或結算按鈕
+      const nextBtn = document.getElementById("nextBtn");
+      nextBtn.style.display = "block";
+      if (currentQ === questions.length - 1) {
+        nextBtn.innerText = "查看測驗結果";
+      } else {
+        nextBtn.innerText = "下一題";
+      }
+
+      document.getElementById("scoreText").innerText = `目前得分：${score} 分`;
+    }
+
+    function nextQuestion() {
+      if (currentQ < questions.length - 1) {
+        currentQ++;
+        renderQuestion();
+      } else {
+        showResults();
+      }
+    }
+
+    function showResults() {
+      document.getElementById("progressBar").style.width = "100%";
+      const quizBody = document.getElementById("quizBody");
+      
+      let reviewHTML = "";
+      userAnswers.forEach((ans, idx) => {
+        const q = questions[idx];
+        const statusClass = ans.isCorrect ? "is-correct" : "is-wrong";
+        const statusText = ans.isCorrect ? "答對" : "答錯";
+        reviewHTML += `
+          <div class="review-item ${statusClass}">
+            <strong>第 ${idx + 1} 題（${statusText}）</strong>：${q.q}<br>
+            你的答案：${q.options[ans.selected]}<br>
+            ${!ans.isCorrect ? `<span style="color:var(--correct);">正確答案：${q.options[q.answer]}</span><br>` : ''}
+            <span style="color:var(--text-muted); font-size:0.85rem;">解析：${q.exp}</span>
+          </div>
+        `;
+      });
+
+      quizBody.innerHTML = `
+        <div class="result-card">
+          <div class="score-circle">
+            <span class="score-number">${score}</span>
+            <span class="score-label">總分 / 100</span>
+          </div>
+          <h2>${score === 100 ? "非常優秀！完全掌握概念！" : score >= 80 ? "表現良好！再接再厲！" : "再複習一下課本觀念會更棒喔！"}</h2>
+          <p style="margin-top:8px; color:var(--text-muted);">答對 ${score / 5} / 20 題</p>
+
+          <div style="margin-top:20px; font-weight:bold; text-align:left;">題目檢討與解析：</div>
+          <div class="review-list">
+            ${reviewHTML}
+          </div>
+
+          <button class="restart-btn" onclick="location.reload()">重新測驗</button>
+        </div>
+      `;
+    }
+
+    // 初始化第一題
+    renderQuestion();
+  </script>
+</body>
+</html>
